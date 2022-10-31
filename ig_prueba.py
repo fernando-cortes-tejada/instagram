@@ -6,6 +6,7 @@ import pandas as pd
 import time
 import os
 from google.cloud import storage
+import requests
 
 ig_data_filename = 'ig_data.csv'
 ig_profiles_filename = 'ig_profiles.csv'
@@ -20,6 +21,8 @@ if not Path(ig_data_filename).is_file():
 ig = instaloader.Instaloader()
 
 ig_acc = pd.read_csv(ig_accounts_filename)
+
+requests.get("https://api.ipify.org/?format=json").json()['ip']
 
 ig.login(ig_acc.iloc[0, 1], ig_acc.iloc[0, 2])
 
