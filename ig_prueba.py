@@ -5,8 +5,10 @@ from pathlib import Path
 import pandas as pd
 import time
 import os
-from google.cloud import storage
+from os import listdir
+from os.path import isfile, join, isdir
 import requests
+import easyocr
 
 ig_data_filename = 'ig_data.csv'
 ig_profiles_filename = 'ig_profiles.csv'
@@ -93,46 +95,31 @@ for story in stories:
 
 ig.close()
 
-def authenticate_implicit_with_adc(project_id):
-    storage_client = storage.Client(project=project_id)
-    buckets = storage_client.list_buckets()
-    print("Buckets:")
-    for bucket in buckets:
-        print(bucket.name)
+reader = easyocr.Reader(['en','es'], gpu = False)
 
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
+profiles = [f for f in listdir('data') if isdir(join('data', f))]
 
-    blob.upload_from_filename(source_file_name)
+ig_data = pd.read_csv('ig_data.csv')
 
-    print(
-        f"File {source_file_name} uploaded to {destination_blob_name}."
-    )
+for profile in profiles:
+    prof_index = ig_data.loc[(ig_data['PROFILE'] == profile) & (ig_data['TYPE'] == 'story') & (pd.isna(ig_data['TAGGED']))].index
+    n = len(prof_index)
+    c = 1
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="credentials_favik.json"
-
-storage_client = storage.Client(project='data-warehouse-325605')
-buckets = storage_client.list_buckets()
-for bucket in buckets:
-    print(bucket.name)
-
-authenticate_implicit_with_adc('data-warehouse-325605')
-upload_blob('hevofavik', 'ig_accounts.csv', 'instagram/ig_accounts.csv')
-
-
-def list_blobs(bucket_name):
-    """Lists all the blobs in the bucket."""
-    # bucket_name = "your-bucket-name"
-
-    storage_client = storage.Client()
-
-    # Note: Client.list_blobs requires at least package version 1.17.0.
-    blobs = storage_client.list_blobs(bucket_name)
-
-    # Note: The call returns a response only when the iterator is consumed.
-    for blob in blobs:
-        print(blob.name)
-
-list_blobs('hevofavik')
+    for i in prof_index:
+        storydatetime = ig_data.loc[i, 'DATETIME']
+        img_path = f"data/{profile}/stories\\{storydatetime[0:10]}_{storydatetime[11:20].replace(':','-')}_UTC.jpg"
+        try:
+            results = reader.readtext(img_path)
+        except:
+            ig_data.loc[i, 'TAGGED'] = 'img_not_found'
+        else: 
+            results = pd.DataFrame(results, columns=['bbox','text','conf']).text
+            mentions = results[results.str.startswith('@')].str.cat(sep=',').replace('@','')
+            hashtags = results[results.str.startswith('#')].str.cat(sep=',').replace('#','')
+            tagged = results.str.cat(sep=' ')
+            ig_data.loc[i, ['HASHTAGS', 'MENTIONS', 'TAGGED']] = [hashtags, mentions, tagged]
+        print(f"Profile {profile}, Iteration {c} of {n}")
+        c = c + 1
+    
+    ig_data.to_csv('ig_data.csv', index=False)
