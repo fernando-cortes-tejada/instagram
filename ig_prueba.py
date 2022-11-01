@@ -26,7 +26,6 @@ pdgbq.context.credentials = credentials
 bigquery.Client(project, credentials)
 
 ig_data_filename = 'ig_data.csv'
-ig_profiles_filename = 'ig_profiles.csv'
 ig_accounts_filename = 'ig_accounts.csv'
 
 if not Path(ig_data_filename).is_file():
