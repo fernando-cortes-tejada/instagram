@@ -6,9 +6,24 @@ import pandas as pd
 import time
 import os
 from os import listdir
-from os.path import isfile, join, isdir
+from os.path import join, isdir
 import requests
 import easyocr
+from google.cloud import bigquery
+import google.auth
+import pandas_gbq as pdgbq
+
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="credentials_favik.json"
+
+credentials, project = google.auth.default(
+    scopes=[
+        "https://www.googleapis.com/auth/cloud-platform",
+        "https://www.googleapis.com/auth/drive",
+        "https://www.googleapis.com/auth/bigquery",
+    ]
+)
+pdgbq.context.credentials = credentials
+bigquery.Client(project, credentials)
 
 ig_data_filename = 'ig_data.csv'
 ig_profiles_filename = 'ig_profiles.csv'
@@ -28,7 +43,7 @@ requests.get("https://api.ipify.org/?format=json").json()['ip']
 
 ig.login(ig_acc.iloc[0, 1], ig_acc.iloc[0, 2])
 
-ig_profiles = pd.read_csv(ig_profiles_filename)
+ig_profiles = pd.read_gbq('select * from data-warehouse-325605.Drive.ig_profiles', project)
 ig_profiles = ig_profiles[ig_profiles['ACTIVO'] == 1]['PROFILE'].to_list()
 
 os.chdir('data')
