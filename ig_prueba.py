@@ -87,9 +87,9 @@ for ig_profile in ig_profiles:
 stories = ig.get_stories(userids=ig_ids)
 
 for story in stories:
-    time.sleep(5)
+    time.sleep(10)
     for item in story.get_items():
-        time.sleep(5)
+        time.sleep(10)
         with open(ig_data_filename, 'a', encoding='utf8', newline='') as csv_file:
             thewriter = writer(csv_file)
             info = [item.profile, 
@@ -105,6 +105,7 @@ for story in stories:
                     '', 
                     '']
             thewriter.writerow(info)
+        time.sleep(5)    
         ig.download_storyitem(item, Path('data\\' + item.profile + '\stories'))
 
 ig.close()
