@@ -40,8 +40,6 @@ ig_acc = pd.read_csv(ig_accounts_filename)
 
 requests.get("https://api.ipify.org/?format=json").json()['ip']
 
-ig.login(ig_acc.iloc[0, 1], ig_acc.iloc[0, 2])
-
 ig_profiles = pd.read_gbq('select * from data-warehouse-325605.Drive.ig_profiles', project)
 ig_profiles = ig_profiles[ig_profiles['ACTIVO'] == 1]['PROFILE'].to_list()
 
@@ -83,6 +81,8 @@ for ig_profile in ig_profiles:
         i += 1
         if i > 6:
             break
+
+ig.login(ig_acc.iloc[0, 1], ig_acc.iloc[0, 2])
 
 stories = ig.get_stories(userids=ig_ids)
 
