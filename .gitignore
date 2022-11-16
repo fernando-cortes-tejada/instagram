@@ -3,4 +3,4 @@
 *.jpg
 *.mp4
 data*
-credentials_favik.json
+*.json
