@@ -82,7 +82,7 @@ for ig_profile in ig_profiles:
         if i > 6:
             break
 
-index_account = 0
+index_account = 5
 ig.login(ig_acc.iloc[index_account, 1], ig_acc.iloc[index_account, 2])
 
 stories = ig.get_stories(userids=ig_ids)
