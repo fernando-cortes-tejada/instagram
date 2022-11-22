@@ -18,7 +18,6 @@ from src.rapid_api.utils import (
     get_stories_vid_urls,
     downupload_img_from_url,
     downupload_vid_from_url,
-    pretty,
 )
 from src.rapid_api.entities import (
     GCP_CREDENTIALS,
@@ -36,7 +35,7 @@ bigquery.Client(project, credentials)
 usernames = pd.read_gbq(IG_PROFILES_QUERY, project)
 usernames = usernames[usernames["ACTIVO"] == 1]["PROFILE"].to_list()
 
-# para la prueba vamos a tomar 1 (marimanotas)
+# para la prueba vamos a tomar 1 (elianisgarrido)
 username = usernames[2]
 
 # solo en caso sea necesario renovar el user_id
